@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FinVision — Set Your Goal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="inner-body">
+
+  <div id="toast" class="toast"></div>
+
+
+  <nav class="navbar">
+    <div class="nav-brand" onclick="window.location.href='index.html'" style="cursor:pointer">
+      <span class="nav-logo">💰</span>
+      <span class="nav-title">FinVision</span>
+    </div>
+    <button class="nav-hamburger" id="navHamburger" type="button" onclick="toggleMobileNav()" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="nav-links" id="navLinks">
+      <button class="nav-btn active-nav" type="button">My Goal</button>
+      <button class="nav-btn" type="button" onclick="window.location.href='progress.html'">Progress</button>
+      <button class="nav-btn" type="button" onclick="window.location.href='invest.html'">Investments</button>
+      <!-- User dropdown -->
+      <div class="nav-user-menu" id="navUserMenu">
+        <button class="nav-user-btn" type="button" onclick="toggleUserMenu()" id="navUserBtn">
+          <span class="nav-user-avatar">👤</span>
+          <span id="navUserName" class="nav-user-name"></span>
+          <span class="nav-caret">▾</span>
+        </button>
+        <div class="nav-dropdown" id="navDropdown">
+          <div class="nav-dropdown-header" id="navDropdownHeader"></div>
+          <div class="nav-dropdown-divider"></div>
+          <button class="nav-dropdown-item" type="button" onclick="window.location.href='progress.html'">
+            📊 Previous Progress
+          </button>
+          <button class="nav-dropdown-item" type="button" onclick="window.location.href='invest.html'">
+            💼 My Investments
+          </button>
+          <div class="nav-dropdown-divider"></div>
+          <button class="nav-dropdown-item danger" type="button" onclick="handleLogout()">
+            🚪 Sign Out
+          </button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+
+  <main class="page-container">
+
+    <div class="page-header">
+      <div class="page-header-content">
+        <h1 class="page-title">Set Your <span class="gradient-text">Financial Goal</span></h1>
+        <p class="page-subtitle">Tell us your dream and we'll show you the path to get there</p>
+      </div>
+      <div class="page-step-badge">Step 1 of 3</div>
+    </div>
+
+    <div class="goal-layout">
+
+      <!-- Goal Form Card -->
+      <div class="goal-form-card">
+
+        <!-- Section 1: Goal Info -->
+        <div class="form-section">
+          <div class="section-header">
+            <div class="section-icon">🎯</div>
+            <div>
+              <h3 class="section-title">Your Dream Goal</h3>
+              <p class="section-desc">What do you want to achieve?</p>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="goalName">Goal Name <span class="required">*</span></label>
+            <input type="text" id="goalName" placeholder="e.g. Buy a House, Retire Early, World Tour..." />
+            <span class="field-error" id="err-goalName"></span>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="targetAmount">Target Amount (₹) <span class="required">*</span></label>
+              <input type="number" id="targetAmount" placeholder="5000000" min="1000" />
+              <span class="field-error" id="err-targetAmount"></span>
+            </div>
+            <div class="form-group">
+              <label for="timelineYears">Timeline (Years) <span class="required">*</span></label>
+              <input type="number" id="timelineYears" placeholder="10" min="1" max="40" />
+              <span class="field-error" id="err-timelineYears"></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 2: Finance Info -->
+        <div class="form-section">
+          <div class="section-header">
+            <div class="section-icon">💵</div>
+            <div>
+              <h3 class="section-title">Your Finances</h3>
+              <p class="section-desc">Help us understand your financial situation</p>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="monthlyIncome">Monthly Income (₹) <span class="required">*</span></label>
+              <input type="number" id="monthlyIncome" placeholder="80000" min="0" />
+              <span class="field-error" id="err-monthlyIncome"></span>
+            </div>
+            <div class="form-group">
+              <label for="monthlySavings">Monthly Savings (₹) <span class="required">*</span></label>
+              <input type="number" id="monthlySavings" placeholder="20000" min="0" />
+              <span class="field-error" id="err-monthlySavings"></span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="currentSavings">Current Savings / Investments (₹)</label>
+            <input type="number" id="currentSavings" placeholder="100000" min="0" />
+          </div>
+        </div>
+
+        <!-- Section 3: Profit / Loss -->
+        <div class="form-section pl-section">
+          <div class="section-header">
+            <div class="section-icon">💹</div>
+            <div>
+              <h3 class="section-title">Profit / Loss Entry</h3>
+              <p class="section-desc">Any recent gain or loss? This adjusts your goal timeline. Default = 0 (no impact).</p>
+            </div>
+          </div>
+
+          <!-- Toggle Buttons -->
+          <div class="pl-toggle">
+            <button type="button" id="plProfitBtn" class="pl-btn pl-profit active" onclick="setPLType('profit')">
+              📈 Profit
+            </button>
+            <button type="button" id="plLossBtn" class="pl-btn pl-loss" onclick="setPLType('loss')">
+              📉 Loss
+            </button>
+          </div>
+
+          <div class="form-group" style="margin-top: 14px;">
+            <label for="plAmount">Amount (₹) — Enter 0 if no recent profit or loss</label>
+            <input type="number" id="plAmount" placeholder="0" min="0" value="0" oninput="updatePLBar()" />
+          </div>
+
+          <!-- Visual P/L Bar -->
+          <div class="pl-bar-wrap">
+            <div class="pl-bar-labels">
+              <span class="pl-label-loss">📉 Loss</span>
+              <span class="pl-label-center">No Change</span>
+              <span class="pl-label-profit">📈 Profit</span>
+            </div>
+            <div class="pl-bar-track">
+              <div class="pl-bar-center-mark"></div>
+              <div class="pl-bar-fill" id="plBarFill" style="left:50%; width:0%; background: var(--border)"></div>
+            </div>
+            <div class="pl-impact-text" id="plImpactText">
+              No change — timeline stays as planned
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 4: Risk Profile -->
+        <div class="form-section">
+          <div class="section-header">
+            <div class="section-icon">⚖️</div>
+            <div>
+              <h3 class="section-title">Investment Risk Profile</h3>
+              <p class="section-desc">How comfortable are you with investment risk?</p>
+            </div>
+          </div>
+          <div class="risk-cards">
+            <div class="risk-card active" id="risk-conservative" onclick="selectRisk('conservative', this)">
+              <span class="risk-emoji">🛡️</span>
+              <span class="risk-name">Conservative</span>
+              <span class="risk-rate">~6% p.a.</span>
+              <span class="risk-desc">Low risk, stable returns</span>
+            </div>
+            <div class="risk-card" id="risk-moderate" onclick="selectRisk('moderate', this)">
+              <span class="risk-emoji">⚖️</span>
+              <span class="risk-name">Moderate</span>
+              <span class="risk-rate">~10% p.a.</span>
+              <span class="risk-desc">Balanced risk & return</span>
+            </div>
+            <div class="risk-card" id="risk-aggressive" onclick="selectRisk('aggressive', this)">
+              <span class="risk-emoji">🚀</span>
+              <span class="risk-name">Aggressive</span>
+              <span class="risk-rate">~14% p.a.</span>
+              <span class="risk-desc">Higher risk, higher reward</span>
+            </div>
+          </div>
+        </div>
+
+        <button type="button" id="analyzeBtn" class="btn-primary btn-full btn-large" onclick="handleAnalyze()">
+          <span id="analyzeBtnText">Analyze My Goal 🔍</span>
+        </button>
+
+      </div><!-- end goal-form-card -->
+
+      <!-- Live Preview Card -->
+      <aside class="preview-card">
+        <div class="preview-header">
+          <h3>📊 Live Preview</h3>
+          <p>Updates as you type</p>
+        </div>
+        <div class="preview-body">
+          <div class="preview-row">
+            <span class="preview-label">Target</span>
+            <span class="preview-val" id="prev-target">—</span>
+          </div>
+          <div class="preview-row">
+            <span class="preview-label">Original Timeline</span>
+            <span class="preview-val" id="prev-timeline">—</span>
+          </div>
+          <div class="preview-row">
+            <span class="preview-label">Adjusted Timeline</span>
+            <span class="preview-val" id="prev-adjusted">—</span>
+          </div>
+          <div class="preview-row">
+            <span class="preview-label">Monthly Savings</span>
+            <span class="preview-val" id="prev-savings">—</span>
+          </div>
+          <div class="preview-row">
+            <span class="preview-label">Expected Rate</span>
+            <span class="preview-val" id="prev-rate">6% p.a.</span>
+          </div>
+          <div class="preview-divider"></div>
+          <div class="preview-row big">
+            <span class="preview-label">Projected Corpus</span>
+            <span class="preview-val accent" id="prev-corpus">—</span>
+          </div>
+          <div class="preview-feasibility" id="prev-feasible"></div>
+          <div class="preview-pl-impact" id="prev-pl-impact"></div>
+        </div>
+        <div class="tips-section">
+          <h4>💡 Smart Tips</h4>
+          <ul class="tips-list">
+            <li>Start investing early — time is your biggest asset</li>
+            <li>Automate your SIP to avoid skipping months</li>
+            <li>Diversify across equity, debt, and gold</li>
+            <li>Review your portfolio every year</li>
+          </ul>
+        </div>
+      </aside>
+
+    </div>
+  </main>
+
+  <script>
+    const API = '/api';
+    let selectedRisk = 'conservative';
+    let plType = 'profit';
+    let currentUser = null;
+
+    /* ── Mobile Nav ── */
+    function toggleMobileNav() {
+      document.getElementById('navLinks').classList.toggle('mobile-open');
+    }
+
+    /* ── User Dropdown Menu ── */
+    function toggleUserMenu() {
+      document.getElementById('navDropdown').classList.toggle('open');
+    }
+    document.addEventListener('click', function(e) {
+      const menu = document.getElementById('navUserMenu');
+      if (menu && !menu.contains(e.target)) {
+        document.getElementById('navDropdown').classList.remove('open');
+      }
+    });
+
+    /* ── Auth Guard ── */
+    (function() {
+      const saved = localStorage.getItem('fv_user');
+      if (!saved) { window.location.href = 'index.html'; return; }
+      try {
+        currentUser = JSON.parse(saved);
+        const fullName = `${currentUser.name} ${currentUser.surname}`;
+        document.getElementById('navUserName').textContent = fullName;
+        document.getElementById('navDropdownHeader').textContent = `👤 ${fullName}`;
+
+        // Always show a fresh goal form
+        // loadExistingGoal(); // Removed to ensure fresh start
+      } catch {
+        localStorage.removeItem('fv_user');
+        window.location.href = 'index.html';
+      }
+    })();
+
+
+
+    /* ── Toast ── */
+    function showToast(msg, type = 'info') {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.className = `toast show ${type}`;
+      setTimeout(() => { t.className = 'toast'; }, 3500);
+    }
+
+    /* ── Logout ── */
+    function handleLogout() {
+      localStorage.removeItem('fv_user');
+      window.location.href = 'index.html';
+    }
+
+    /* ── Risk Selection ── */
+    function selectRisk(risk, el) {
+      selectedRisk = risk;
+      document.querySelectorAll('.risk-card').forEach(c => c.classList.remove('active'));
+      if (el) el.classList.add('active');
+      updatePreview();
+      updatePLBar();
+    }
+
+    /* ── P/L Type Toggle ── */
+    function setPLType(type) {
+      plType = type;
+      document.getElementById('plProfitBtn').classList.toggle('active', type === 'profit');
+      document.getElementById('plLossBtn').classList.toggle('active', type === 'loss');
+      updatePLBar();
+      updatePreview();
+    }
+
+    /* ── Get P/L signed value ── */
+    function getPLValue() {
+      const raw = parseFloat(document.getElementById('plAmount').value) || 0;
+      return plType === 'profit' ? raw : -raw;
+    }
+
+    /* ── Format INR ── */
+    function formatINR(n) {
+      n = Math.round(n);
+      if (n >= 10000000) return `₹${(n/10000000).toFixed(2)} Cr`;
+      if (n >= 100000)   return `₹${(n/100000).toFixed(2)} L`;
+      return `₹${n.toLocaleString('en-IN')}`;
+    }
+
+    /* ── Binary search for months to reach target ── */
+    function calcMonthsToGoal(effectiveInitial, target, monthlySavings, annualRate) {
+      if (effectiveInitial >= target) return 0;
+      if (monthlySavings <= 0) return 600;
+      const mr = annualRate / 12;
+      let lo = 1, hi = 600;
+      for (let i = 0; i < 60; i++) {
+        const mid = Math.floor((lo + hi) / 2);
+        const fvC = monthlySavings * ((Math.pow(1 + mr, mid) - 1) / mr);
+        const fvL = Math.max(0, effectiveInitial) * Math.pow(1 + mr, mid);
+        if (fvC + fvL >= target) hi = mid;
+        else lo = mid + 1;
+      }
+      return lo;
+    }
+
+    /* ── Update P/L Bar + Impact text ── */
+    function updatePLBar() {
+      const pl   = getPLValue();
+      const fill = document.getElementById('plBarFill');
+      const text = document.getElementById('plImpactText');
+
+      const target  = parseFloat(document.getElementById('targetAmount').value) || 0;
+      const years   = parseFloat(document.getElementById('timelineYears').value) || 0;
+      const savings = parseFloat(document.getElementById('monthlySavings').value) || 0;
+      const initial = parseFloat(document.getElementById('currentSavings').value) || 0;
+      const rates   = { conservative: 0.06, moderate: 0.10, aggressive: 0.14 };
+      const rate    = rates[selectedRisk];
+
+      if (pl === 0) {
+        fill.style.left       = '50%';
+        fill.style.width      = '0%';
+        fill.style.background = 'var(--border)';
+        text.textContent      = '⚪ No change — timeline stays as planned';
+        text.className        = 'pl-impact-text neutral';
+        return;
+      }
+
+      /* Calculate p/l bar fill (max 50% each side) */
+      const barPct = target > 0 ? Math.min(50, (Math.abs(pl) / target) * 100) : 0;
+
+      if (pl > 0) {
+        /* Profit — fill grows RIGHT from center */
+        fill.style.left       = '50%';
+        fill.style.width      = `${barPct}%`;
+        fill.style.background = 'linear-gradient(90deg,#00b894,#00d2d3)';
+      } else {
+        /* Loss — fill grows LEFT from center */
+        fill.style.left       = `${50 - barPct}%`;
+        fill.style.width      = `${barPct}%`;
+        fill.style.background = 'linear-gradient(90deg,#e17055,#ff6b6b)';
+      }
+
+      /* Calculate timeline impact */
+      if (target > 0 && savings > 0) {
+        const effectiveInitial = initial + pl;
+        const adjMonths        = calcMonthsToGoal(effectiveInitial, target, savings, rate);
+        const origMonths       = years * 12;
+        const diffMonths       = origMonths - adjMonths;
+        const diffYears        = Math.round(Math.abs(diffMonths) / 12 * 10) / 10;
+
+        if (pl > 0) {
+          if (diffMonths > 0) {
+            text.textContent = `📈 Profit of ${formatINR(pl)} → Goal achievable ${diffYears} yr(s) SOONER (${Math.ceil(adjMonths/12)} yrs instead of ${years})`;
+            text.className   = 'pl-impact-text profit';
+          } else {
+            text.textContent = `📈 Great! Profit noted — timeline already optimal at ${years} years`;
+            text.className   = 'pl-impact-text profit';
+          }
+        } else {
+          if (diffMonths < 0) {
+            text.textContent = `📉 Loss of ${formatINR(Math.abs(pl))} → Goal will take ${diffYears} additional yr(s) (${Math.ceil(adjMonths/12)} yrs instead of ${years})`;
+            text.className   = 'pl-impact-text loss';
+          } else {
+            text.textContent = `📉 Loss noted — savings still sufficient for ${years}-year plan`;
+            text.className   = 'pl-impact-text loss';
+          }
+        }
+      } else {
+        text.textContent = pl > 0 ? '📈 Profit entered — fill in goal details to see timeline impact' : '📉 Loss entered — fill in goal details to see timeline impact';
+        text.className   = pl > 0 ? 'pl-impact-text profit' : 'pl-impact-text loss';
+      }
+    }
+
+    /* ── Live Preview ── */
+    function updatePreview() {
+      const target  = parseFloat(document.getElementById('targetAmount').value) || 0;
+      const years   = parseFloat(document.getElementById('timelineYears').value) || 0;
+      const savings = parseFloat(document.getElementById('monthlySavings').value) || 0;
+      const initial = parseFloat(document.getElementById('currentSavings').value) || 0;
+      const pl      = getPLValue();
+      const rates   = { conservative: 0.06, moderate: 0.10, aggressive: 0.14 };
+      const rateLabels = { conservative: '6%', moderate: '10%', aggressive: '14%' };
+      const rate = rates[selectedRisk];
+
+      document.getElementById('prev-target').textContent   = target  ? formatINR(target)         : '—';
+      document.getElementById('prev-timeline').textContent = years   ? `${years} Years`           : '—';
+      document.getElementById('prev-savings').textContent  = savings ? `${formatINR(savings)}/mo` : '—';
+      document.getElementById('prev-rate').textContent     = rateLabels[selectedRisk] + ' p.a.';
+
+      if (savings > 0 && years > 0) {
+        const mr   = rate / 12;
+        const mon  = years * 12;
+        const fvC  = savings * ((Math.pow(1 + mr, mon) - 1) / mr);
+        const fvL  = initial * Math.pow(1 + mr, mon);
+        const proj = fvC + fvL;
+        document.getElementById('prev-corpus').textContent = formatINR(proj);
+
+        /* Adjusted timeline */
+        if (pl !== 0) {
+          const adjMonths = calcMonthsToGoal(initial + pl, target, savings, rate);
+          const adjYears  = Math.ceil(adjMonths / 12);
+          const diff      = years - adjYears;
+          const adjEl     = document.getElementById('prev-adjusted');
+          adjEl.textContent = adjYears + ' Years';
+          adjEl.style.color = diff > 0 ? 'var(--success)' : diff < 0 ? 'var(--danger)' : 'var(--text-primary)';
+
+          const plImpact = document.getElementById('prev-pl-impact');
+          if (diff > 0) {
+            plImpact.innerHTML = `<span style="color:var(--success)">🚀 ${diff} yr faster due to profit!</span>`;
+          } else if (diff < 0) {
+            plImpact.innerHTML = `<span style="color:var(--danger)">⚠️ ${Math.abs(diff)} yr longer due to loss</span>`;
+          } else {
+            plImpact.innerHTML = '';
+          }
+        } else {
+          document.getElementById('prev-adjusted').textContent = years ? `${years} Years` : '—';
+          document.getElementById('prev-adjusted').style.color = '';
+          document.getElementById('prev-pl-impact').innerHTML = '';
+        }
+
+        if (target) {
+          const feasEl = document.getElementById('prev-feasible');
+          feasEl.className = proj >= target ? 'preview-feasibility yes' : 'preview-feasibility no';
+          feasEl.textContent = proj >= target
+            ? `✅ Goal achievable! Surplus: ${formatINR(proj - target)}`
+            : `⚠️ Shortfall: ${formatINR(target - proj)}`;
+        }
+      }
+    }
+
+    /* Attach live updates */
+    ['targetAmount','timelineYears','monthlyIncome','monthlySavings','currentSavings','plAmount'].forEach(id => {
+      document.getElementById(id).addEventListener('input', () => { updatePreview(); updatePLBar(); });
+    });
+
+    /* ── Validation ── */
+    function validateGoal() {
+      let valid = true;
+      document.querySelectorAll('.field-error').forEach(e => e.textContent = '');
+      document.querySelectorAll('input').forEach(el => el.classList.remove('error'));
+
+      const checks = [
+        { id: 'goalName',       err: 'err-goalName',       label: 'Goal name' },
+        { id: 'targetAmount',   err: 'err-targetAmount',   label: 'Target amount', min: 1000 },
+        { id: 'timelineYears',  err: 'err-timelineYears',  label: 'Timeline', min: 1, max: 40 },
+        { id: 'monthlyIncome',  err: 'err-monthlyIncome',  label: 'Monthly income', min: 0 },
+        { id: 'monthlySavings', err: 'err-monthlySavings', label: 'Monthly savings', min: 0 }
+      ];
+      checks.forEach(c => {
+        const el  = document.getElementById(c.id);
+        const val = el.value.trim();
+        if (!val) {
+          el.classList.add('error');
+          document.getElementById(c.err).textContent = `${c.label} is required.`;
+          valid = false;
+        } else if (c.min !== undefined && parseFloat(val) < c.min) {
+          el.classList.add('error');
+          document.getElementById(c.err).textContent = `Minimum value is ${c.min}.`;
+          valid = false;
+        } else if (c.max !== undefined && parseFloat(val) > c.max) {
+          el.classList.add('error');
+          document.getElementById(c.err).textContent = `Maximum is ${c.max} years.`;
+          valid = false;
+        }
+      });
+      return valid;
+    }
+
+    /* ── Analyze & Save Goal ── */
+    async function handleAnalyze() {
+      if (!validateGoal()) return;
+
+      const btn = document.getElementById('analyzeBtn');
+      btn.disabled = true;
+      document.getElementById('analyzeBtnText').textContent = 'Analyzing...';
+
+      try {
+        const res = await fetch(`${API}/goals`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId:         currentUser.id,
+            goalName:       document.getElementById('goalName').value.trim(),
+            targetAmount:   document.getElementById('targetAmount').value,
+            timelineYears:  document.getElementById('timelineYears').value,
+            monthlyIncome:  document.getElementById('monthlyIncome').value,
+            monthlySavings: document.getElementById('monthlySavings').value,
+            currentSavings: document.getElementById('currentSavings').value || '0',
+            profitLoss:     getPLValue(),
+            riskProfile:    selectedRisk
+          })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast('Goal saved! Taking you to your dashboard... 🚀', 'success');
+          setTimeout(() => { window.location.href = 'progress.html'; }, 900);
+        } else {
+          showToast(data.message, 'error');
+          btn.disabled = false;
+          document.getElementById('analyzeBtnText').textContent = 'Analyze My Goal 🔍';
+        }
+      } catch {
+        showToast('Server error. Make sure python3 server.py is running.', 'error');
+        btn.disabled = false;
+        document.getElementById('analyzeBtnText').textContent = 'Analyze My Goal 🔍';
+      }
+    }
+  </script>
+</body>
+</html>

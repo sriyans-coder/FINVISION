@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FinVision — Progress Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="inner-body">
+
+  <div id="toast" class="toast"></div>
+
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="nav-brand" onclick="window.location.href='index.html'" style="cursor:pointer">
+      <span class="nav-logo">💰</span>
+      <span class="nav-title">FinVision</span>
+    </div>
+    <button class="nav-hamburger" id="navHamburger" type="button" onclick="toggleMobileNav()" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="nav-links" id="navLinks">
+      <button class="nav-btn" type="button" onclick="nav('goal.html')">My Goal</button>
+      <button class="nav-btn active-nav" type="button">Progress</button>
+      <button class="nav-btn" type="button" onclick="nav('invest.html')">Investments</button>
+      <div class="nav-user-menu" id="navUserMenu">
+        <button class="nav-user-btn" type="button" onclick="toggleUserMenu()">
+          <span class="nav-user-avatar">👤</span>
+          <span id="navUserName" class="nav-user-name"></span>
+          <span class="nav-caret">▾</span>
+        </button>
+        <div class="nav-dropdown" id="navDropdown">
+          <div class="nav-dropdown-header" id="navDropdownHeader"></div>
+          <div class="nav-dropdown-divider"></div>
+          <button class="nav-dropdown-item" type="button" onclick="window.location.href='goal.html'">
+            🎯 Edit My Goal
+          </button>
+          <button class="nav-dropdown-item" type="button" onclick="window.location.href='invest.html'">
+            💼 My Investments
+          </button>
+          <div class="nav-dropdown-divider"></div>
+          <button class="nav-dropdown-item danger" type="button" onclick="handleLogout()">
+            🚪 Sign Out
+          </button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <main class="page-container">
+
+    <div class="page-header">
+      <div class="page-header-content">
+        <h1 class="page-title">Your <span class="gradient-text">Progress Dashboard</span></h1>
+        <p class="page-subtitle" id="p3-subtitle">Track every step on your journey to financial freedom</p>
+      </div>
+      <div class="page-header-actions">
+        <button class="btn-secondary" type="button" onclick="nav('goal.html')">✏️ Edit Goal</button>
+        <button class="btn-primary" type="button" onclick="nav('invest.html')">💼 Investments →</button>
+      </div>
+    </div>
+
+    <!-- AI Verdict Banner -->
+    <div id="aiBanner" class="ai-banner hidden">
+      <div class="ai-banner-icon" id="aiBannerIcon">🤖</div>
+      <div class="ai-banner-content">
+        <h3 id="aiBannerTitle"></h3>
+        <p id="aiBannerText"></p>
+      </div>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="stats-grid">
+      <div class="stat-card primary">
+        <div class="stat-card-icon">🎯</div>
+        <div class="stat-card-content">
+          <span class="stat-card-label">Target Amount</span>
+          <span class="stat-card-value" id="sc-target">₹0</span>
+        </div>
+      </div>
+      <div class="stat-card success">
+        <div class="stat-card-icon">📈</div>
+        <div class="stat-card-content">
+          <span class="stat-card-label">Projected Corpus</span>
+          <span class="stat-card-value" id="sc-projected">₹0</span>
+        </div>
+      </div>
+      <div class="stat-card info">
+        <div class="stat-card-icon">💰</div>
+        <div class="stat-card-content">
+          <span class="stat-card-label">Monthly Savings</span>
+          <span class="stat-card-value" id="sc-saved">₹0</span>
+        </div>
+      </div>
+      <div class="stat-card warning">
+        <div class="stat-card-icon">⏳</div>
+        <div class="stat-card-content">
+          <span class="stat-card-label">Adjusted Timeline</span>
+          <span class="stat-card-value" id="sc-years">—</span>
+          <span class="stat-card-badge" id="sc-pl-badge"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════
+         GOAL COMPARISON SECTION (shown only when same goal,
+         different target amount was re-submitted)
+    ════════════════════════════════════════════════════════════ -->
+    <div id="comparisonSection" class="card comparison-card hidden">
+      <div class="comp-header">
+        <div class="comp-header-left">
+          <h3 class="card-title">📊 Goal Amount Comparison</h3>
+          <p class="comp-subtitle" id="compSubtitle">Updated target — see how both plans stack up</p>
+        </div>
+        <span class="comp-badge">Updated</span>
+      </div>
+
+      <!-- Target Pills -->
+      <div class="comp-targets-row">
+        <div class="comp-target-pill prev-pill">
+          <span class="ctp-label">⏮ Previous Target</span>
+          <span class="ctp-amount" id="compPrevAmount">₹0</span>
+          <span class="ctp-badge" id="compPrevBadge"></span>
+        </div>
+        <div class="comp-arrow">
+          <span class="comp-arrow-icon">→</span>
+          <span class="comp-arrow-label">Updated to</span>
+        </div>
+        <div class="comp-target-pill new-pill">
+          <span class="ctp-label">🆕 New Target</span>
+          <span class="ctp-amount" id="compNewAmount">₹0</span>
+          <span class="ctp-badge" id="compNewBadge"></span>
+        </div>
+      </div>
+
+      <!-- Comparison Chart -->
+      <div class="comp-chart-section">
+        <h4 class="chart-subtitle">📅 Year-by-Year Growth vs Both Targets</h4>
+        <div class="comp-chart-container">
+          <div class="comp-chart-outer" id="compChartOuter">
+            <!-- bars + target lines injected by JS -->
+          </div>
+          <div class="comp-bar-labels" id="compBarLabels"></div>
+        </div>
+        <div class="comp-legend">
+          <span class="comp-legend-item"><span class="comp-dot" style="background:linear-gradient(#6c63ff,#a29bfe)"></span> Below both targets</span>
+          <span class="comp-legend-item"><span class="comp-dot" style="background:linear-gradient(#fdcb6e,#e17055)"></span> Hits previous target</span>
+          <span class="comp-legend-item"><span class="comp-dot" style="background:linear-gradient(#00b894,#00d2d3)"></span> Hits new target</span>
+          <span class="comp-legend-item"><span class="comp-dot comp-dot-dashed" style="border-color:#e17055"></span> Previous target line</span>
+          <span class="comp-legend-item"><span class="comp-dot comp-dot-dashed" style="border-color:#00b894"></span> New target line</span>
+        </div>
+      </div>
+
+      <!-- Summary -->
+      <div class="comp-summary-box">
+        <div class="comp-summary-icon">📝</div>
+        <div>
+          <strong>Analysis</strong>
+          <p id="compSummaryText" class="comp-summary-text"></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Progress Layout -->
+    <div class="progress-layout">
+
+      <!-- LEFT Column -->
+      <div class="progress-left">
+
+        <!-- Progress Bar Card -->
+        <div class="card">
+          <h3 class="card-title">📊 Goal Progress</h3>
+          <div class="big-progress-wrap">
+            <div class="big-progress-bar">
+              <div class="big-progress-fill" id="bigProgressFill" style="width:0%"></div>
+            </div>
+            <div class="big-progress-labels">
+              <span id="progressPercent">0% funded</span>
+              <span id="progressRemaining">₹0 remaining</span>
+            </div>
+          </div>
+
+          <!-- Year-by-Year Bar Chart -->
+          <div class="growth-chart-wrap">
+            <h4 class="chart-subtitle">📅 Year-by-Year Projection (Compound Interest)</h4>
+            <div class="bar-chart" id="barChart"></div>
+            <div class="bar-chart-labels" id="barChartLabels"></div>
+          </div>
+        </div>
+
+        <!-- Milestone Timeline -->
+        <div class="card">
+          <h3 class="card-title">🏆 Milestones</h3>
+          <div class="timeline" id="milestoneTimeline"></div>
+        </div>
+
+      </div><!-- end progress-left -->
+
+      <!-- RIGHT Column -->
+      <div class="progress-right">
+        <div class="card">
+          <h3 class="card-title">🤖 AI Recommendations</h3>
+          <div id="aiRecommendations" class="ai-recs"></div>
+        </div>
+      </div><!-- end progress-right -->
+
+    </div><!-- end progress-layout -->
+
+  </main>
+
+  <script>
+    const API = '/api';
+    let currentUser = null;
+    let currentGoal = null;
+
+    function nav(url) { window.location.href = url; }
+    function toggleMobileNav() {
+      document.getElementById('navLinks').classList.toggle('mobile-open');
+    }
+    function toggleUserMenu() {
+      document.getElementById('navDropdown').classList.toggle('open');
+    }
+    document.addEventListener('click', function(e) {
+      const menu = document.getElementById('navUserMenu');
+      if (menu && !menu.contains(e.target)) {
+        document.getElementById('navDropdown').classList.remove('open');
+      }
+    });
+
+    /* ── Auth Guard ── */
+    (function() {
+      const saved = localStorage.getItem('fv_user');
+      if (!saved) { window.location.href = 'index.html'; return; }
+      try {
+        currentUser = JSON.parse(saved);
+        const fullName = `${currentUser.name} ${currentUser.surname}`;
+        document.getElementById('navUserName').textContent = fullName;
+        document.getElementById('navDropdownHeader').textContent = `👤 ${fullName}`;
+        loadDashboard();
+      } catch {
+        localStorage.removeItem('fv_user');
+        window.location.href = 'index.html';
+      }
+    })();
+
+    /* ── Load Dashboard ── */
+    async function loadDashboard() {
+      try {
+        const res  = await fetch(`${API}/goals/${currentUser.id}`);
+        const data = await res.json();
+        if (!data.success) {
+          showToast('No goal set yet. Redirecting...', 'info');
+          setTimeout(() => { window.location.href = 'goal.html'; }, 1500);
+          return;
+        }
+        currentGoal = data.goal;
+        renderDashboard();
+      } catch {
+        showToast('Could not load data. Make sure the server is running.', 'error');
+      }
+    }
+
+    /* ── Format INR ── */
+    function formatINR(n) {
+      n = Math.round(n);
+      if (n >= 10000000) return `₹${(n/10000000).toFixed(2)} Cr`;
+      if (n >= 100000)   return `₹${(n/100000).toFixed(2)} L`;
+      return `₹${n.toLocaleString('en-IN')}`;
+    }
+
+    /* ── Binary search — adjusted timeline ── */
+    function calcMonthsToGoal(effectiveInitial, target, monthlySavings, annualRate) {
+      if (effectiveInitial >= target) return 0;
+      if (monthlySavings <= 0) return 600;
+      const mr = annualRate / 12;
+      let lo = 1, hi = 600;
+      for (let i = 0; i < 60; i++) {
+        const mid = Math.floor((lo + hi) / 2);
+        const fvC = monthlySavings * ((Math.pow(1 + mr, mid) - 1) / mr);
+        const fvL = Math.max(0, effectiveInitial) * Math.pow(1 + mr, mid);
+        if (fvC + fvL >= target) hi = mid;
+        else lo = mid + 1;
+      }
+      return lo;
+    }
+
+    /* ── Render Dashboard ── */
+    function renderDashboard() {
+      const g = currentGoal;
+      const projPct = Math.min(100, Math.round((g.projectedTotal / g.targetAmount) * 100));
+      const surplus  = g.projectedTotal - g.targetAmount;
+
+      document.getElementById('p3-subtitle').textContent =
+        `Goal: "${g.goalName}" • ${g.timelineYears} year timeline • ${(g.annualRate * 100).toFixed(0)}% expected return`;
+
+      // Stats
+      document.getElementById('sc-target').textContent    = formatINR(g.targetAmount);
+      document.getElementById('sc-projected').textContent = formatINR(g.projectedTotal);
+      document.getElementById('sc-saved').textContent     = formatINR(g.monthlySavings) + '/mo';
+
+      // Adjusted timeline from P/L
+      const pl = g.profitLoss || 0;
+      let adjYears = g.timelineYears;
+      if (pl !== 0) {
+        const adjMonths = calcMonthsToGoal(g.currentSavings + pl, g.targetAmount, g.monthlySavings, g.annualRate);
+        adjYears = Math.ceil(adjMonths / 12);
+      }
+      const plDiff = g.timelineYears - adjYears;
+      document.getElementById('sc-years').textContent = `${adjYears} yrs`;
+      const badge = document.getElementById('sc-pl-badge');
+      if (pl > 0 && plDiff > 0) {
+        badge.textContent = `🚀 ${plDiff} yr faster!`;
+        badge.className   = 'stat-card-badge badge-profit';
+      } else if (pl < 0 && plDiff < 0) {
+        badge.textContent = `⚠️ +${Math.abs(plDiff)} yr longer`;
+        badge.className   = 'stat-card-badge badge-loss';
+      } else {
+        badge.textContent = pl === 0 ? 'No P/L entered' : 'No timeline impact';
+        badge.className   = 'stat-card-badge badge-neutral';
+      }
+
+      // AI Banner
+      const banner = document.getElementById('aiBanner');
+      banner.classList.remove('hidden', 'feasible', 'not-feasible');
+      if (g.feasible) {
+        banner.classList.add('feasible');
+        document.getElementById('aiBannerIcon').textContent  = '🤖';
+        document.getElementById('aiBannerTitle').textContent = '✅ AI says: Your goal IS achievable!';
+        document.getElementById('aiBannerText').textContent  =
+          `At ${(g.annualRate*100).toFixed(0)}% annual return, you will accumulate ${formatINR(g.projectedTotal)} — ` +
+          `a surplus of ${formatINR(surplus)} over your target. Keep it up!`;
+      } else {
+        banner.classList.add('not-feasible');
+        document.getElementById('aiBannerIcon').textContent  = '⚠️';
+        document.getElementById('aiBannerTitle').textContent = '⚠️ AI says: Savings need a boost!';
+        document.getElementById('aiBannerText').textContent  =
+          `Your current plan may fall short by ${formatINR(g.shortfall)}. ` +
+          `To meet your ${formatINR(g.targetAmount)} goal, try saving ${formatINR(g.monthlyNeeded)}/month.`;
+      }
+
+      // Progress Bar
+      document.getElementById('bigProgressFill').style.width = `${projPct}%`;
+      document.getElementById('progressPercent').textContent = `${projPct}% of goal projected`;
+      document.getElementById('progressRemaining').textContent =
+        g.feasible ? `🎉 Surplus: ${formatINR(surplus)}` : `Shortfall: ${formatINR(g.shortfall)}`;
+
+      // Render all sections
+      renderBarChart(g);
+      renderMilestones(g, projPct, adjYears, plDiff);
+      renderAIRecs(g);
+      renderComparisonSection(g);   // ← NEW comparison chart
+    }
+
+    /* ══════════════════════════════════════════════════════════
+       GOAL COMPARISON CHART RENDERER
+    ══════════════════════════════════════════════════════════ */
+    function renderComparisonSection(g) {
+      const section = document.getElementById('comparisonSection');
+      const prev    = g.previousGoal;
+
+      if (!prev) {
+        section.classList.add('hidden');
+        return;
+      }
+      section.classList.remove('hidden');
+
+      const prevTarget = prev.targetAmount;
+      const newTarget  = g.targetAmount;
+      const yearCount  = Math.min(g.timelineYears, 20);
+      const mr         = g.annualRate / 12;
+
+      // Subtitle
+      document.getElementById('compSubtitle').textContent =
+        `"${g.goalName}" target changed — comparing projected growth against both amounts`;
+
+      // Build corpus per year
+      const corpus = [];
+      for (let y = 1; y <= yearCount; y++) {
+        const mon = y * 12;
+        const fvC = g.monthlySavings * ((Math.pow(1 + mr, mon) - 1) / mr);
+        const fvL = (g.currentSavings || 0) * Math.pow(1 + mr, mon);
+        corpus.push(fvC + fvL);
+      }
+
+      // Achievement years (1-indexed; 0 = not achieved within plan)
+      const prevAchYear = corpus.findIndex(v => v >= prevTarget) + 1;
+      const newAchYear  = corpus.findIndex(v => v >= newTarget)  + 1;
+
+      // Target pills
+      document.getElementById('compPrevAmount').textContent = formatINR(prevTarget);
+      document.getElementById('compNewAmount').textContent  = formatINR(newTarget);
+
+      const pb = document.getElementById('compPrevBadge');
+      const nb = document.getElementById('compNewBadge');
+      if (prevAchYear > 0) {
+        pb.textContent = `✅ Achieved in Yr ${prevAchYear}`;
+        pb.className   = 'ctp-badge ctp-achieved';
+      } else {
+        pb.textContent = `⚠️ Not in ${g.timelineYears}-yr plan`;
+        pb.className   = 'ctp-badge ctp-miss';
+      }
+      if (newAchYear > 0) {
+        nb.textContent = `✅ Achieved in Yr ${newAchYear}`;
+        nb.className   = 'ctp-badge ctp-achieved';
+      } else {
+        nb.textContent = `⚠️ Not in ${g.timelineYears}-yr plan`;
+        nb.className   = 'ctp-badge ctp-miss';
+      }
+
+      // Chart
+      const outer = document.getElementById('compChartOuter');
+      const labelsEl = document.getElementById('compBarLabels');
+      outer.innerHTML   = '';
+      labelsEl.innerHTML = '';
+
+      const maxVal = Math.max(...corpus, prevTarget, newTarget) * 1.1;
+
+      // Target lines (absolute, bottom = % of chart height)
+      const prevLinePct = Math.min(96, (prevTarget / maxVal) * 100);
+      const newLinePct  = Math.min(96, (newTarget  / maxVal) * 100);
+
+      function makeLine(pct, colorClass, labelText) {
+        const line = document.createElement('div');
+        line.className = `comp-tgt-line ${colorClass}`;
+        line.style.bottom = `${pct}%`;
+        const lbl = document.createElement('span');
+        lbl.className   = 'comp-tgt-label';
+        lbl.textContent = labelText;
+        line.appendChild(lbl);
+        return line;
+      }
+      outer.appendChild(makeLine(prevLinePct, 'prev-tgt-line', `Prev: ${formatINR(prevTarget)}`));
+      outer.appendChild(makeLine(newLinePct,  'new-tgt-line',  `New: ${formatINR(newTarget)}`));
+
+      // Bars
+      const barsRow = document.createElement('div');
+      barsRow.className = 'comp-bars-row';
+
+      corpus.forEach((val, i) => {
+        const hp      = (val / maxVal) * 100;
+        const hitNew  = val >= newTarget;
+        const hitPrev = val >= prevTarget;
+        const color   = hitNew
+          ? 'linear-gradient(180deg,#00b894,#00d2d3)'
+          : hitPrev
+            ? 'linear-gradient(180deg,#fdcb6e,#e17055)'
+            : 'linear-gradient(180deg,#6c63ff,#a29bfe)';
+
+        const bar = document.createElement('div');
+        bar.className        = 'comp-bar';
+        bar.style.height     = `${hp}%`;
+        bar.style.background = color;
+        bar.title            = `Year ${i+1}: ${formatINR(val)}`;
+        barsRow.appendChild(bar);
+
+        const lbl = document.createElement('div');
+        lbl.className   = 'chart-label';
+        lbl.textContent = `Y${i+1}`;
+        labelsEl.appendChild(lbl);
+      });
+      outer.appendChild(barsRow);
+
+      // Summary
+      const diff     = newTarget - prevTarget;
+      const diffText = diff > 0
+        ? `increased by ${formatINR(Math.abs(diff))}`
+        : `decreased by ${formatINR(Math.abs(diff))}`;
+      let summary = `Your goal "${g.goalName}" has been ${diffText} (${formatINR(prevTarget)} → ${formatINR(newTarget)}). `;
+
+      if (prevAchYear > 0 && newAchYear > 0) {
+        const delta = newAchYear - prevAchYear;
+        if (delta > 0)
+          summary += `Your plan meets the previous target at Year ${prevAchYear} and the updated target at Year ${newAchYear} — that's ${delta} additional year(s).`;
+        else if (delta === 0)
+          summary += `Both targets are met in the same Year ${prevAchYear} under your current plan.`;
+        else
+          summary += `The new (lower) target is reached sooner — Year ${newAchYear} vs Year ${prevAchYear}.`;
+        summary += g.feasible ? ` Goal is achievable with a surplus of ${formatINR(g.projectedTotal - newTarget)}.` : '';
+      } else if (prevAchYear > 0 && newAchYear === 0) {
+        summary += `Your plan meets the previous target at Year ${prevAchYear}, but the updated higher target of ${formatINR(newTarget)} is not achievable within ${g.timelineYears} years. Consider increasing monthly savings or extending the timeline.`;
+      } else if (prevAchYear === 0 && newAchYear === 0) {
+        summary += `Neither target is achievable within the current ${g.timelineYears}-year plan. Consider increasing monthly savings to ${formatINR(g.monthlyNeeded)}/month.`;
+      } else {
+        summary += `The new target is achievable in Year ${newAchYear} of your plan.`;
+      }
+      document.getElementById('compSummaryText').textContent = summary;
+    }
+
+    /* ── Bar Chart ── */
+    function renderBarChart(g) {
+      const chart  = document.getElementById('barChart');
+      const labels = document.getElementById('barChartLabels');
+      chart.innerHTML = '';
+      labels.innerHTML = '';
+      const years  = Math.min(g.timelineYears, 20);
+      const mr     = g.annualRate / 12;
+      let maxVal   = 0;
+      const values = [];
+      for (let y = 1; y <= years; y++) {
+        const mon = y * 12;
+        const fvC = g.monthlySavings * ((Math.pow(1 + mr, mon) - 1) / mr);
+        const fvL = (g.currentSavings || 0) * Math.pow(1 + mr, mon);
+        const val = fvC + fvL;
+        values.push(val);
+        if (val > maxVal) maxVal = val;
+      }
+      values.forEach((val, i) => {
+        const hp  = maxVal > 0 ? (val / maxVal) * 100 : 0;
+        const hit = val >= g.targetAmount;
+        const bar = document.createElement('div');
+        bar.className        = 'chart-bar';
+        bar.style.height     = `${hp}%`;
+        bar.style.background = hit
+          ? 'linear-gradient(180deg,#00b894,#00d2d3)'
+          : 'linear-gradient(180deg,#6c63ff,#a29bfe)';
+        bar.title = `Year ${i+1}: ${formatINR(val)}`;
+        chart.appendChild(bar);
+        const lbl = document.createElement('div');
+        lbl.className   = 'chart-label';
+        lbl.textContent = `Y${i+1}`;
+        labels.appendChild(lbl);
+      });
+    }
+
+    /* ── Milestones ── */
+    function renderMilestones(g, projPct, adjYears, diff) {
+      const tl = document.getElementById('milestoneTimeline');
+      tl.innerHTML = '';
+      if (diff && diff !== 0) {
+        const b = document.createElement('div');
+        b.className = diff > 0 ? 'timeline-pl-banner profit' : 'timeline-pl-banner loss';
+        b.innerHTML = diff > 0
+          ? `🚀 Profit credited — goal projected ${diff} year(s) sooner!`
+          : `⚠️ Loss applied — timeline extended by ${Math.abs(diff)} year(s)`;
+        tl.appendChild(b);
+      }
+      const steps = [
+        { label: '🚀 Plan Created!',        desc: 'Goal set — your journey begins',                        pct: 0   },
+        { label: '25% Projected',           desc: `Reach ${formatINR(g.targetAmount * 0.25)}`,             pct: 25  },
+        { label: '50% Halfway Mark',        desc: `Reach ${formatINR(g.targetAmount * 0.5)}`,              pct: 50  },
+        { label: '75% Almost There',        desc: `Reach ${formatINR(g.targetAmount * 0.75)}`,             pct: 75  },
+        { label: '🎉 Goal Fully Achieved!', desc: `Corpus meets ${formatINR(g.targetAmount)}`,             pct: 100 }
+      ];
+      steps.forEach(s => {
+        const done   = projPct > s.pct;
+        const active = !done && projPct >= (s.pct - 3);
+        tl.innerHTML += `
+          <div class="timeline-item">
+            <div class="timeline-dot ${done ? 'done' : active ? 'active' : 'pending'}"></div>
+            <div class="timeline-content">
+              <div class="timeline-label">${s.label}</div>
+              <div class="timeline-desc">${s.desc}</div>
+            </div>
+          </div>`;
+      });
+    }
+
+    /* ── AI Recommendations ── */
+    function renderAIRecs(g) {
+      const container = document.getElementById('aiRecommendations');
+      container.innerHTML = '';
+      const recs = [];
+      const sr = (g.monthlySavings / g.monthlyIncome) * 100;
+      if (sr < 20)
+        recs.push({ icon: '📈', text: `Savings rate is ${sr.toFixed(1)}%. Try to reach 20% for faster growth.` });
+      else
+        recs.push({ icon: '✅', text: `Savings rate of ${sr.toFixed(1)}% is above the recommended 20%. Great!` });
+      if (!g.feasible) {
+        recs.push({ icon: '💡', text: `Increase monthly savings by ${formatINR(g.monthlyNeeded - g.monthlySavings)} to close the gap.` });
+        recs.push({ icon: '⏰', text: 'Extending your timeline by 2–3 years can dramatically improve your corpus.' });
+      } else {
+        recs.push({ icon: '🚀', text: "You're on track! Consider increasing investments to build an even larger corpus." });
+      }
+      if (g.riskProfile === 'conservative')
+        recs.push({ icon: '⚖️', text: 'Consider adding a 30% equity SIP for potentially better long-term returns.' });
+      else if (g.riskProfile === 'aggressive')
+        recs.push({ icon: '🛡️', text: 'Balance aggressive holdings with debt/gold (80:10:10 ratio).' });
+      recs.push({ icon: '🆘', text: `Keep an emergency fund of 6× monthly expenses (${formatINR(g.monthlyIncome * 6)}) before investing.` });
+      recs.push({ icon: '📊', text: `Rebalance your portfolio annually to stay aligned with your "${g.goalName}" goal.` });
+      recs.forEach(r => {
+        const el = document.createElement('div');
+        el.className = 'ai-rec-item';
+        el.innerHTML = `<span class="ai-rec-icon">${r.icon}</span><span>${r.text}</span>`;
+        container.appendChild(el);
+      });
+    }
+
+    /* ── Toast ── */
+    function showToast(msg, type = 'info') {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.className = `toast show ${type}`;
+      setTimeout(() => { t.className = 'toast'; }, 3500);
+    }
+
+    /* ── Logout ── */
+    function handleLogout() {
+      localStorage.removeItem('fv_user');
+      window.location.href = 'index.html';
+    }
+
+  </script>
+</body>
+</html>

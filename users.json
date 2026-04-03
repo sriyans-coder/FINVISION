@@ -1,0 +1,110 @@
+[
+  {
+    "id": "ab5cb743-e660-44c4-8f32-8c4351747cac",
+    "name": "Piyush",
+    "surname": "Gupta",
+    "email": "piyush@test.com",
+    "gender": "male",
+    "age": 25,
+    "createdAt": "2026-03-28T06:48:05.028372Z"
+  },
+  {
+    "id": "4d3054b0-3d83-4e2d-be57-f72580e045b6",
+    "name": "Piyush",
+    "surname": "Gupta",
+    "email": "test@finvision.com",
+    "gender": "male",
+    "age": 25,
+    "createdAt": "2026-03-28T06:53:20.202590Z"
+  },
+  {
+    "id": "a6d2c314-d5f5-4976-bdfe-127d9af62e2a",
+    "name": "sriyans",
+    "surname": "tiwari",
+    "email": "sriyans2006@gmail.com",
+    "gender": "male",
+    "age": 19,
+    "createdAt": "2026-03-28T07:32:23.058661Z"
+  },
+  {
+    "id": "01f8c4d8-8286-457a-a210-8a82e9abaccf",
+    "name": "Test",
+    "surname": "User",
+    "email": "newuser123@test.com",
+    "gender": "male",
+    "age": 28,
+    "createdAt": "2026-03-28T07:43:30.926594Z"
+  },
+  {
+    "id": "ce75b9c5-78c8-4866-ac5f-8561897e49b7",
+    "name": "piyush",
+    "surname": "gupta",
+    "email": "piyushgupta66365@gmail.com",
+    "gender": "male",
+    "age": 19,
+    "createdAt": "2026-03-28T11:22:06.797032Z"
+  },
+  {
+    "id": "afa677d1-76b3-4117-bd54-0b110207ab5d",
+    "name": "bhavy",
+    "surname": "jain",
+    "email": "priya@goalmint.com",
+    "gender": "male",
+    "age": 19,
+    "createdAt": "2026-03-28T13:21:38.116532Z"
+  },
+  {
+    "id": "e784b6cd-17df-4c15-afad-f7600629ba5d",
+    "name": "divya",
+    "surname": "jangid",
+    "email": "2025csdivya21826@poornima.edu.in",
+    "gender": "female",
+    "age": 18,
+    "createdAt": "2026-03-28T13:34:10.123047Z"
+  },
+  {
+    "id": "65fdc686-c960-49b7-9d8f-b71eb1f34612",
+    "name": "piyush",
+    "surname": "gupta",
+    "email": "piyushgupta66305@gmail.com",
+    "gender": "male",
+    "age": 19,
+    "createdAt": "2026-03-28T13:45:21.471620Z"
+  },
+  {
+    "id": "c88fd2a1-09ca-4226-ba42-c71c46778172",
+    "name": "divya",
+    "surname": "agarwal",
+    "email": "test@fin0vision.com",
+    "gender": "female",
+    "age": 19,
+    "createdAt": "2026-03-28T14:12:16.352980Z"
+  },
+  {
+    "id": "24a14aa8-f702-4088-a4fe-3807bd315839",
+    "name": "Test",
+    "surname": "User",
+    "email": "test@test.com",
+    "gender": "male",
+    "age": 25,
+    "createdAt": "2026-03-28T20:39:22.387894Z"
+  },
+  {
+    "id": "afc6ee06-71ae-4669-be9d-ade0009f1f42",
+    "name": "New",
+    "surname": "User",
+    "email": "newuser@test.com",
+    "gender": "female",
+    "age": 25,
+    "createdAt": "2026-03-28T21:05:29.090886Z"
+  },
+  {
+    "id": "3a59fc9a-6fb8-4151-8286-8772ce4cd28d",
+    "name": "Test",
+    "surname": "User",
+    "email": "test@example.com",
+    "gender": "male",
+    "age": 30,
+    "createdAt": "2026-04-02T11:44:08.383673Z"
+  }
+]

@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FinVision — Login</title>
+  <meta name="description" content="Sign in or create your FinVision account to start tracking your financial goals." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="auth-body">
+
+  <!-- Animated Background -->
+  <div class="hero-bg">
+    <div class="hero-shape s1"></div>
+    <div class="hero-shape s2"></div>
+    <div class="hero-shape s3"></div>
+  </div>
+
+    <div id="toast" class="toast"></div>
+
+  <div class="auth-container">
+
+    <!-- ── Left Panel ── -->
+    <div class="auth-left">
+      <div class="auth-brand">
+        <span class="brand-icon">💰</span>
+        <h1 class="brand-name">FinVision</h1>
+      </div>
+      <p class="auth-tagline">Turn your financial dreams into<br /><span class="gradient-text">achievable reality.</span></p>
+      <ul class="auth-features">
+        <li><span class="feat-icon">🎯</span>AI-powered goal feasibility analysis</li>
+        <li><span class="feat-icon">📈</span>Compound interest projections</li>
+        <li><span class="feat-icon">🔔</span>Daily motivational reminders</li>
+        <li><span class="feat-icon">📊</span>Real-time progress tracking</li>
+      </ul>
+      <div class="auth-stats">
+        <div class="stat-item">
+          <span class="stat-num">10K+</span>
+          <span class="stat-label">Goals Tracked</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-num">₹2Cr+</span>
+          <span class="stat-label">Wealth Created</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-num">95%</span>
+          <span class="stat-label">Success Rate</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Right Panel — Auth Card ── -->
+    <div class="auth-right">
+      <div class="auth-card">
+
+        <!-- Tab Switcher -->
+        <div class="auth-tabs">
+          <button id="tabSignup" class="auth-tab active" type="button" onclick="switchTab('signup')">Create Account</button>
+          <button id="tabSignin" class="auth-tab" type="button" onclick="switchTab('signin')">Sign In</button>
+        </div>
+
+        <!-- ── SIGN UP FORM ── -->
+        <div id="signupForm" class="auth-form active">
+          <h2 class="form-title">Start Your Journey</h2>
+          <p class="form-subtitle">Join thousands achieving their financial goals</p>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="su-name">First Name <span class="required">*</span></label>
+              <input type="text" id="su-name" placeholder="Piyush" autocomplete="given-name" />
+              <span class="field-error" id="err-name"></span>
+            </div>
+            <div class="form-group">
+              <label for="su-surname">Last Name <span class="required">*</span></label>
+              <input type="text" id="su-surname" placeholder="Gupta" autocomplete="family-name" />
+              <span class="field-error" id="err-surname"></span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="su-email">Email Address <span class="required">*</span></label>
+            <input type="email" id="su-email" placeholder="you@example.com" autocomplete="email" />
+            <span class="field-error" id="err-email"></span>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="su-gender">Gender <span class="required">*</span></label>
+              <select id="su-gender">
+                <option value="">Select gender</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="non-binary">Non-binary</option>
+                <option value="prefer-not">Prefer not to say</option>
+              </select>
+              <span class="field-error" id="err-gender"></span>
+            </div>
+            <div class="form-group">
+              <label for="su-age">Age <span class="required">*</span></label>
+              <input type="number" id="su-age" placeholder="25" min="13" max="100" />
+              <span class="field-error" id="err-age"></span>
+            </div>
+          </div>
+
+          <!-- NOTE: type="button" prevents any form reload -->
+          <button type="button" id="signupBtn" class="btn-primary btn-full" onclick="handleSignup()">
+            <span id="signupBtnText">Create My Account →</span>
+          </button>
+
+          <p class="auth-switch">Already have an account? <a href="#" onclick="switchTab('signin'); return false;">Sign In</a></p>
+        </div>
+
+        <!-- ── SIGN IN FORM ── -->
+        <div id="signinForm" class="auth-form">
+          <h2 class="form-title">Welcome Back!</h2>
+          <p class="form-subtitle">Continue your path to financial freedom</p>
+
+          <div class="form-group">
+            <label for="si-email">Email Address <span class="required">*</span></label>
+            <input type="email" id="si-email" placeholder="you@example.com" autocomplete="email" />
+            <span class="field-error" id="err-si-email"></span>
+          </div>
+
+          <!-- NOTE: type="button" prevents any form reload -->
+          <button type="button" id="signinBtn" class="btn-primary btn-full" onclick="handleSignin()">
+            <span id="signinBtnText">Sign In →</span>
+          </button>
+
+          <p class="auth-switch">New here? <a href="#" onclick="switchTab('signup'); return false;">Create Account</a></p>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API = '/api';
+
+    /* ── Toast ── */
+    function showToast(msg, type = 'info') {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.className = `toast show ${type}`;
+      setTimeout(() => { t.className = 'toast'; }, 3500);
+    }
+
+    /* ── Tab Switcher ── */
+    function switchTab(tab) {
+      document.getElementById('tabSignup').classList.toggle('active', tab === 'signup');
+      document.getElementById('tabSignin').classList.toggle('active', tab === 'signin');
+      document.getElementById('signupForm').classList.toggle('active', tab === 'signup');
+      document.getElementById('signinForm').classList.toggle('active', tab === 'signin');
+      clearErrors();
+    }
+
+    function clearErrors() {
+      document.querySelectorAll('.field-error').forEach(e => e.textContent = '');
+      document.querySelectorAll('input, select').forEach(el => el.classList.remove('error'));
+    }
+
+    function setError(fieldId, errId, msg) {
+      document.getElementById(fieldId).classList.add('error');
+      document.getElementById(errId).textContent = msg;
+    }
+
+    /* ── Sign Up Handler ── */
+    async function handleSignup() {
+      clearErrors();
+      let valid = true;
+
+      const name    = document.getElementById('su-name').value.trim();
+      const surname = document.getElementById('su-surname').value.trim();
+      const email   = document.getElementById('su-email').value.trim();
+      const gender  = document.getElementById('su-gender').value;
+      const age     = document.getElementById('su-age').value.trim();
+
+      if (!name)    { setError('su-name', 'err-name', 'First name is required.'); valid = false; }
+      if (!surname) { setError('su-surname', 'err-surname', 'Last name is required.'); valid = false; }
+      if (!email)   { setError('su-email', 'err-email', 'Email is required.'); valid = false; }
+      else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        setError('su-email', 'err-email', 'Please enter a valid email.'); valid = false;
+      }
+      if (!gender)  { setError('su-gender', 'err-gender', 'Please select your gender.'); valid = false; }
+      if (!age)     { setError('su-age', 'err-age', 'Age is required.'); valid = false; }
+      else if (parseInt(age) < 13 || parseInt(age) > 100) {
+        setError('su-age', 'err-age', 'Age must be 13–100.'); valid = false;
+      }
+
+      if (!valid) return;
+
+      const btn = document.getElementById('signupBtn');
+      btn.disabled = true;
+      document.getElementById('signupBtnText').textContent = 'Creating Account...';
+
+      try {
+        const res = await fetch(`${API}/signup`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, surname, email, gender, age })
+        });
+        const data = await res.json();
+        if (data.success) {
+          localStorage.setItem('fv_user', JSON.stringify(data.user));
+          showToast(`Welcome, ${data.user.name}! 🎉`, 'success');
+          setTimeout(() => { window.location.href = 'goal.html'; }, 100);
+        } else {
+          showToast(data.message, 'error');
+          btn.disabled = false;
+          document.getElementById('signupBtnText').textContent = 'Create My Account →';
+        }
+      } catch {
+        showToast('Server error. Make sure python3 server.py is running.', 'error');
+        btn.disabled = false;
+        document.getElementById('signupBtnText').textContent = 'Create My Account →';
+      }
+    }
+
+    /* ── Sign In Handler ── */
+    async function handleSignin() {
+      clearErrors();
+      const email = document.getElementById('si-email').value.trim();
+
+      if (!email) { setError('si-email', 'err-si-email', 'Email is required.'); return; }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        setError('si-email', 'err-si-email', 'Please enter a valid email.'); return;
+      }
+
+      const btn = document.getElementById('signinBtn');
+      btn.disabled = true;
+      document.getElementById('signinBtnText').textContent = 'Signing In...';
+
+      try {
+        const res = await fetch(`${API}/signin`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email })
+        });
+        const data = await res.json();
+        if (data.success) {
+          localStorage.setItem('fv_user', JSON.stringify(data.user));
+          showToast(`Welcome back, ${data.user.name}! 💰`, 'success');
+          // Always go to goal page so user can set a fresh goal
+          // Previous progress is preserved on server for comparison
+          setTimeout(() => { window.location.href = 'goal.html'; }, 100);
+        } else {
+          showToast(data.message, 'error');
+          btn.disabled = false;
+          document.getElementById('signinBtnText').textContent = 'Sign In →';
+        }
+      } catch {
+        showToast('Server error. Make sure python3 server.py is running.', 'error');
+        btn.disabled = false;
+        document.getElementById('signinBtnText').textContent = 'Sign In →';
+      }
+    }
+
+    /* ── Allow Enter key to submit ── */
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        const activeForm = document.getElementById('signupForm').classList.contains('active')
+          ? 'signup' : 'signin';
+        if (activeForm === 'signup') handleSignup();
+        else handleSignin();
+      }
+    });
+
+    /* ── If already logged in, go back to goal page (not progress) ── */
+    (function() {
+      const saved = localStorage.getItem('fv_user');
+      if (saved) {
+        try {
+          const user = JSON.parse(saved);
+          if (user && user.id) window.location.href = 'goal.html';
+        } catch {}
+      }
+    })();
+  </script>
+</body>
+</html>

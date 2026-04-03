@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FinVision — Investment Suggestions</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="inner-body">
+
+  <div id="toast" class="toast"></div>
+
+
+  <nav class="navbar">
+    <div class="nav-brand" onclick="window.location.href='index.html'" style="cursor:pointer">
+      <span class="nav-logo">💰</span>
+      <span class="nav-title">FinVision</span>
+    </div>
+    <button class="nav-hamburger" id="navHamburger" type="button" onclick="toggleMobileNav()" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="nav-links" id="navLinks">
+      <button class="nav-btn" type="button" onclick="window.location.href='goal.html'">My Goal</button>
+      <button class="nav-btn" type="button" onclick="window.location.href='progress.html'">Progress</button>
+      <button class="nav-btn active-nav" type="button">Investments</button>
+      <div class="nav-user-menu" id="navUserMenu">
+        <button class="nav-user-btn" type="button" onclick="toggleUserMenu()">
+          <span class="nav-user-avatar">👤</span>
+          <span id="navUserName" class="nav-user-name"></span>
+          <span class="nav-caret">▾</span>
+        </button>
+        <div class="nav-dropdown" id="navDropdown">
+          <div class="nav-dropdown-header" id="navDropdownHeader"></div>
+          <div class="nav-dropdown-divider"></div>
+          <button class="nav-dropdown-item" type="button" onclick="window.location.href='progress.html'">
+            📊 Previous Progress
+          </button>
+          <button class="nav-dropdown-item" type="button" onclick="window.location.href='goal.html'">
+            🎯 Edit My Goal
+          </button>
+          <div class="nav-dropdown-divider"></div>
+          <button class="nav-dropdown-item danger" type="button" onclick="handleLogout()">
+            🚪 Sign Out
+          </button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <main class="page-container">
+
+    <div class="page-header">
+      <div class="page-header-content">
+        <h1 class="page-title">Smart <span class="gradient-text">Investment Suggestions</span></h1>
+        <p class="page-subtitle" id="inv-subtitle">Personalized picks based on your goal, risk profile, and feasibility</p>
+      </div>
+      <div class="page-step-badge">Step 3 of 3</div>
+    </div>
+
+    <!-- Context Banner -->
+    <div id="contextBanner" class="inv-context-banner hidden">
+      <div class="inv-context-left">
+        <span id="ctx-goal" class="ctx-goal-name"></span>
+        <span id="ctx-risk" class="ctx-badge"></span>
+        <span id="ctx-feasible" class="ctx-badge"></span>
+      </div>
+      <button class="btn-secondary btn-sm" type="button" onclick="window.location.href='goal.html'">✏️ Edit Goal</button>
+    </div>
+
+    <!-- Loading state -->
+    <div id="loadingState" class="invest-loading">
+      <div class="invest-loading-spinner"></div>
+      <p>Generating your personalized investment plan...</p>
+    </div>
+
+    <!-- Investment Cards Grid -->
+    <div id="investGrid" class="invest-grid hidden"></div>
+
+    <!-- Bottom CTA -->
+    <div id="investCTA" class="invest-cta hidden">
+      <div class="invest-cta-content">
+        <h3>💼 Ready to Start Investing?</h3>
+        <p>Remember: The best time to invest was yesterday. The second best time is <strong>now.</strong></p>
+        <div class="invest-cta-buttons">
+          <button class="btn-primary" type="button" onclick="window.location.href='progress.html'">📊 View My Progress</button>
+          <button class="btn-secondary" type="button" onclick="window.location.href='goal.html'">✏️ Update My Goal</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Disclaimer -->
+    <p class="invest-disclaimer">
+      ⚠️ <strong>Disclaimer:</strong> These suggestions are AI-generated for educational purposes only and are not financial advice. Always consult a SEBI-registered financial advisor before investing.
+    </p>
+
+  </main>
+
+  <script>
+    const API = '/api';
+    let currentUser = null;
+    let currentGoal = null;
+
+    function toggleMobileNav() {
+      document.getElementById('navLinks').classList.toggle('mobile-open');
+    }
+    function toggleUserMenu() {
+      document.getElementById('navDropdown').classList.toggle('open');
+    }
+    document.addEventListener('click', function(e) {
+      const menu = document.getElementById('navUserMenu');
+      if (menu && !menu.contains(e.target)) {
+        document.getElementById('navDropdown').classList.remove('open');
+      }
+    });
+
+    /* ── Auth Guard ── */
+    (function() {
+      const saved = localStorage.getItem('fv_user');
+      if (!saved) { window.location.href = 'index.html'; return; }
+      try {
+        currentUser = JSON.parse(saved);
+        const fullName = `${currentUser.name} ${currentUser.surname}`;
+        document.getElementById('navUserName').textContent = fullName;
+        document.getElementById('navDropdownHeader').textContent = `👤 ${fullName}`;
+        loadGoalAndRender();
+      } catch {
+        localStorage.removeItem('fv_user');
+        window.location.href = 'index.html';
+      }
+    })();
+
+    /* ── Load Goal ── */
+    async function loadGoalAndRender() {
+      try {
+        const res  = await fetch(`${API}/goals/${currentUser.id}`);
+        const data = await res.json();
+        if (!data.success) {
+          showToast('No goal found. Please set your goal first.', 'info');
+          setTimeout(() => { window.location.href = 'goal.html'; }, 1500);
+          return;
+        }
+        currentGoal = data.goal;
+        renderInvestPage();
+      } catch {
+        showToast('Server error. Make sure python3 server.py is running.', 'error');
+      } finally {
+        document.getElementById('loadingState').classList.add('hidden');
+      }
+    }
+
+    /* ── Format INR ── */
+    function formatINR(n) {
+      n = Math.round(n);
+      if (n >= 10000000) return `₹${(n/10000000).toFixed(2)} Cr`;
+      if (n >= 100000)   return `₹${(n/100000).toFixed(2)} L`;
+      return `₹${n.toLocaleString('en-IN')}`;
+    }
+
+    /* ── Render Page ── */
+    function renderInvestPage() {
+      const g = currentGoal;
+
+      // Context Banner
+      const banner = document.getElementById('contextBanner');
+      banner.classList.remove('hidden');
+      document.getElementById('ctx-goal').textContent = `🎯 Goal: ${g.goalName}`;
+      const riskBadge = document.getElementById('ctx-risk');
+      riskBadge.textContent = { conservative: '🛡️ Conservative', moderate: '⚖️ Moderate', aggressive: '🚀 Aggressive' }[g.riskProfile];
+      riskBadge.className = `ctx-badge ctx-badge-${g.riskProfile}`;
+      const feasBadge = document.getElementById('ctx-feasible');
+      feasBadge.textContent = g.feasible ? '✅ Goal Achievable' : '⚠️ Goal Needs Boost';
+      feasBadge.className = `ctx-badge ${g.feasible ? 'ctx-badge-success' : 'ctx-badge-warning'}`;
+
+      document.getElementById('inv-subtitle').textContent =
+        `${g.feasible ? '🚀 Suggestions to grow your wealth FASTER' : '💡 Suggestions to help you REACH your goal'} • Risk: ${g.riskProfile} • Target: ${formatINR(g.targetAmount)}`;
+
+      // Generate & render suggestions
+      const suggestions = getSuggestions(g);
+      const grid = document.getElementById('investGrid');
+      grid.innerHTML = '';
+      grid.classList.remove('hidden');
+
+      suggestions.forEach((s, i) => {
+        const card = document.createElement('div');
+        card.className = 'invest-card';
+        card.style.animationDelay = `${i * 0.1}s`;
+        card.innerHTML = `
+          <div class="invest-card-header" style="background: linear-gradient(135deg, ${s.color}22, ${s.color}11); border-left: 4px solid ${s.color}">
+            <span class="invest-card-icon">${s.icon}</span>
+            <div class="invest-card-title-wrap">
+              <h3 class="invest-card-title">${s.name}</h3>
+              <div class="invest-card-meta">
+                <span class="invest-badge return-badge">📈 ${s.returnRange}</span>
+                <span class="invest-badge risk-badge risk-${s.riskLevel.toLowerCase().replace(/\s/g,'-')}">${s.riskLevel} Risk</span>
+              </div>
+            </div>
+          </div>
+          <div class="invest-card-body">
+            <p class="invest-card-desc">${s.desc}</p>
+            <div class="invest-why">
+              <span class="invest-why-label">💡 Why for you:</span>
+              <span class="invest-why-text">${s.why}</span>
+            </div>
+            ${s.tip ? `<div class="invest-tip">⚡ Pro Tip: ${s.tip}</div>` : ''}
+          </div>
+          <div class="invest-card-footer">
+            <div class="invest-suitable">
+              <span>✅ Best for: ${s.bestFor}</span>
+            </div>
+          </div>`;
+        grid.appendChild(card);
+      });
+
+      document.getElementById('investCTA').classList.remove('hidden');
+    }
+
+    /* ── Investment Suggestion Engine (Smart / Situational) ── */
+    function getSuggestions(g) {
+      const { riskProfile: risk, feasible, timelineYears: years, monthlyIncome,
+              monthlySavings, goalName, shortfall, monthlyNeeded, currentSavings,
+              annualRate, projectedTotal, targetAmount } = g;
+      const goalL   = (goalName || '').toLowerCase();
+      const isShort = years <= 3;
+      const isMed   = years > 3 && years < 10;
+      const isLong  = years >= 10;
+      const sr      = (monthlySavings / monthlyIncome) * 100;
+      const extra   = Math.max(0, monthlyNeeded - monthlySavings);
+      const hasSavings = (currentSavings || 0) > 0;
+      const surplusPct = feasible ? ((projectedTotal - targetAmount) / targetAmount) * 100 : 0;
+      const isRetirement = goalL.includes('retir') || goalL.includes('pension');
+      const isHouse      = goalL.includes('house') || goalL.includes('home') || goalL.includes('flat');
+      const isEducation  = goalL.includes('education') || goalL.includes('college') || goalL.includes('study');
+      const isEmergency  = goalL.includes('emergency') || goalL.includes('fund');
+      const isCar        = goalL.includes('car') || goalL.includes('vehicle') || goalL.includes('bike');
+
+      const OPT = {
+        sipEquity: {
+          icon: '📈', name: 'Equity SIP — Flexi-cap Funds',
+          returnRange: '12–15% p.a.', riskLevel: 'Moderate', color: '#6c63ff',
+          desc: 'Invest a fixed monthly amount into diversified equity mutual funds covering large, mid, and small caps.',
+          bestFor: 'Long-term wealth creation (5+ years)',
+          why: feasible
+            ? `Grow your surplus of ${formatINR(projectedTotal - targetAmount)} even further with higher equity exposure`
+            : `12–15% returns can help bridge your ₹${formatINR(shortfall)} shortfall faster than FDs`,
+          tip: 'Use a SIP calculator to find the exact monthly amount you need'
+        },
+        indexFund: {
+          icon: '📊', name: 'Nifty 50 Index Fund',
+          returnRange: '11–13% p.a.', riskLevel: 'Moderate', color: '#00b894',
+          desc: 'A low-cost fund that mirrors India\'s top 50 companies. Minimal fees (~0.1% expense ratio), consistent long-term growth, zero guesswork.',
+          bestFor: 'Passive investors, long-term goals',
+          why: isLong
+            ? 'Over 10+ years, index funds historically beat 80% of actively managed funds'
+            : 'A stable foundation for your goal corpus with market-linked returns',
+          tip: 'Combine Nifty 50 + Nifty Next 50 for 100-stock diversification'
+        },
+        ppf: {
+          icon: '🏛️', name: 'PPF — Public Provident Fund',
+          returnRange: '7.1% p.a. (Tax-free)', riskLevel: 'None', color: '#74b9ff',
+          desc: 'Government-backed 15-year savings with guaranteed tax-free returns. ₹1.5L annual tax deduction under Section 80C.',
+          bestFor: 'Conservative investors, tax saving',
+          why: sr < 15
+            ? 'Forced savings + tax-free growth = more take-home wealth with low savings rate'
+            : 'Safe guaranteed growth that complements your market investments',
+          tip: 'Deposit before April 5 each year to earn full month interest'
+        },
+        elss: {
+          icon: '💡', name: 'ELSS — Tax-Saving Mutual Fund',
+          returnRange: '14–18% p.a. (potential)', riskLevel: 'High', color: '#fdcb6e',
+          desc: 'Equity fund with 80C tax deduction up to ₹1.5L. Shortest lock-in (3 years) among tax-saving options, with highest return potential.',
+          bestFor: 'Tax payers who want high returns',
+          why: `Save up to ₹46,800 in taxes annually — that\'s extra money you can redirect toward your "${goalName}" goal`,
+          tip: 'Spread across 2–3 ELSS funds from different AMCs to reduce fund manager risk'
+        },
+        nps: {
+          icon: '🧓', name: 'NPS — National Pension System',
+          returnRange: '10–12% p.a.', riskLevel: 'Moderate', color: '#a29bfe',
+          desc: 'Market-linked retirement savings with extra ₹50,000 tax benefit under 80CCD(1B). Long lock-in till age 60 with partial withdrawal allowed.',
+          bestFor: 'Retirement goals, extra tax saving',
+          why: isRetirement
+            ? 'Purpose-built for retirement — dual tax benefit + disciplined long-term investing'
+            : 'Extra ₹50,000 tax deduction beyond the ₹1.5L limit = significant annual savings',
+          tip: 'Choose 75% equity allocation (Active Tier-1) for maximum long-term growth'
+        },
+        goldEtf: {
+          icon: '🥇', name: 'Gold ETF / Sovereign Gold Bond',
+          returnRange: '8–10% p.a.', riskLevel: 'Low', color: '#ffeaa7',
+          desc: 'Digital gold tracking international prices. Sovereign Gold Bonds also pay 2.5% annual interest with zero storage cost.',
+          bestFor: 'Portfolio diversification, inflation hedge',
+          why: isHouse
+            ? 'Gold historically rises in uncertain times — protects your down-payment savings'
+            : 'Acts as portfolio insurance; gold rises when equity markets fall (keep 5–10%)',
+          tip: 'Prefer Sovereign Gold Bonds over ETFs — they pay 2.5% extra interest'
+        },
+        reit: {
+          icon: '🏢', name: 'REITs — Real Estate Investment Trusts',
+          returnRange: '8–12% p.a.', riskLevel: 'Moderate', color: '#55efc4',
+          desc: 'Own commercial real estate (offices, malls) without buying property. Must distribute 90% of income as dividends — regular passive income.',
+          bestFor: 'Passive income + real estate exposure',
+          why: isHouse
+            ? 'Earn real estate income while saving for your home down-payment'
+            : 'Regular dividend income of 6–8% supplements your monthly savings',
+          tip: 'Embassy REIT, Mindspace REIT, and Nexus REIT are popular options in India'
+        },
+        smallCap: {
+          icon: '🚀', name: 'Small Cap Mutual Funds',
+          returnRange: '15–22% p.a. (potential)', riskLevel: 'Very High', color: '#fd79a8',
+          desc: 'Invest in emerging small companies with explosive growth potential. High volatility short-term, superior returns over 7+ year horizons.',
+          bestFor: 'Aggressive investors with 7+ year timeline',
+          why: feasible
+            ? `Turn your surplus into significantly more wealth — ${surplusPct.toFixed(0)}% surplus can become 2× with small cap exposure`
+            : `High return potential (15–22%) could bridge your shortfall of ${formatINR(shortfall)} faster`,
+          tip: 'Limit to 15–20% of portfolio — volatility is extreme in the short term'
+        },
+        stepUpSip: {
+          icon: '📅', name: 'Step-Up SIP (Increase 10% Every Year)',
+          returnRange: '12–15% + acceleration', riskLevel: 'Moderate', color: '#00cec9',
+          desc: 'Increase your SIP by 10% annually, aligned with salary hikes. Cuts goal timeline by 25–35% vs a flat SIP.',
+          bestFor: 'Growing income earners',
+          why: feasible
+            ? `Reach "${goalName}" 2–4 years ahead of schedule — retire earlier!`
+            : `Extra ₹${extra > 0 ? formatINR(extra) : '0'}/mo needed — step-up gradually phases this in without stress`,
+          tip: 'Automate the step-up on your SIP anniversary date every year'
+        },
+        liquidFund: {
+          icon: '💧', name: 'Liquid Fund (Emergency Buffer)',
+          returnRange: '5–7% p.a.', riskLevel: 'Very Low', color: '#6c63ff',
+          desc: 'Highly liquid debt fund for emergency corpus. Redemption in 24 hours, better than savings account (5–7% vs 2.5–3.5%).',
+          bestFor: 'Emergency fund, short-term cash parking',
+          why: `Before investing, build 6-month emergency fund of ${formatINR(monthlyIncome * 6)} here — so you never need to break long-term investments`,
+          tip: 'Available on Zerodha Coin, Groww, or your bank\'s mutual fund platform'
+        },
+        fd: {
+          icon: '🏦', name: 'Bank Fixed Deposit (FD)',
+          returnRange: '6–7.5% p.a.', riskLevel: 'None', color: '#b2bec3',
+          desc: 'Guaranteed returns for a fixed tenure. DICGC insured up to ₹5L. Best for capital preservation and short-term goals.',
+          bestFor: 'Short-term goals (<3 years), capital protection',
+          why: isShort
+            ? `Your ${years}-year goal is short-term — FDs give guaranteed returns without market timing risk`
+            : 'Park initial savings buffer here for stability while equity portion grows',
+          tip: 'Ladder FDs across 1, 2, 3 years to avoid reinvestment risk'
+        },
+        balancedFund: {
+          icon: '⚖️', name: 'Balanced Advantage Fund',
+          returnRange: '10–13% p.a.', riskLevel: 'Moderate', color: '#e17055',
+          desc: 'Auto-balances between equity and debt based on market valuations. No manual monitoring needed.',
+          bestFor: 'Moderate investors wanting auto-rebalancing',
+          why: feasible
+            ? 'Steady 10–13% returns with automatic downside protection'
+            : `Better than FD/PPF returns (10–13% vs 6–7%) with lower risk — helps bridge ${formatINR(shortfall)} gap`,
+          tip: 'HDFC BAF, ICICI Prudential BAF are consistently top-rated'
+        },
+        rdSip: {
+          icon: '💳', name: 'Recurring Deposit (RD)',
+          returnRange: '5.5–7% p.a.', riskLevel: 'None', color: '#a29bfe',
+          desc: 'Fixed monthly deposit with guaranteed returns — like a SIP but at bank fixed rates. Zero market risk, completely safe.',
+          bestFor: 'Very conservative, short goals',
+          why: isShort
+            ? `For a ${years}-year goal, RD provides guaranteed risk-free accumulation without needing a demat account`
+            : 'Good as a supplementary safe savings track alongside equity SIPs',
+          tip: 'Compare RD rates across small finance banks — often 7–8.5%'
+        }
+      };
+
+      // ── Smart Selection Logic ──
+      let picks = [];
+
+      // Logic based on goal type keywords
+      if (isEmergency) {
+        picks = [OPT.liquidFund, OPT.fd, OPT.rdSip, OPT.balancedFund, OPT.goldEtf];
+      } else if (isRetirement) {
+        picks = [OPT.nps, OPT.indexFund, OPT.ppf, OPT.elss, OPT.goldEtf];
+        if (risk === 'aggressive') picks[1] = OPT.smallCap;
+      } else if (isHouse) {
+        picks = [OPT.reit, OPT.sipEquity, OPT.goldEtf, OPT.stepUpSip, OPT.indexFund];
+        if (risk === 'conservative') picks[1] = OPT.fd;
+      } else if (isEducation) {
+        picks = [OPT.ppf, OPT.elss, OPT.indexFund, OPT.balancedFund, OPT.stepUpSip];
+        if (isShort) picks[0] = OPT.fd;
+      } else if (isCar) {
+        picks = [OPT.fd, OPT.rdSip, OPT.balancedFund, OPT.liquidFund, OPT.goldEtf];
+      } else {
+        // Default based on timeline and feasibility
+        if (isShort) picks = [OPT.fd, OPT.rdSip, OPT.liquidFund, OPT.balancedFund, OPT.goldEtf];
+        else if (isLong) picks = [OPT.indexFund, OPT.sipEquity, OPT.elss, OPT.ppf, OPT.goldEtf];
+        else picks = [OPT.balancedFund, OPT.indexFund, OPT.elss, OPT.sipEquity, OPT.goldEtf];
+      }
+
+      // Refine based on feasibility & risk
+      if (!feasible && !isShort) {
+        // If not feasible, prioritize higher return options or acceleration
+        if (risk === 'aggressive') picks.unshift(OPT.smallCap);
+        else picks.unshift(OPT.stepUpSip);
+      }
+
+      // Add "Why" personalization based on actual numbers
+      picks = picks.map(p => {
+        let personalWhy = p.why;
+        if (!feasible && p === OPT.stepUpSip) {
+          personalWhy = `To bridge your ₹${formatINR(shortfall)} shortfall, stepping up your savings by 10% each year is the most effective strategy.`;
+        } else if (p === OPT.smallCap && risk === 'aggressive') {
+          personalWhy = `Since you are comfortable with risk, these could turn your ₹${formatINR(monthlySavings)} monthly saving into a massive corpus over ${years} years.`;
+        } else if (p === OPT.fd && isShort) {
+          personalWhy = `With only ${years} years left for "${goalName}", capital safety in FDs is more important than market volatility.`;
+        }
+        return { ...p, why: personalWhy };
+      });
+
+      // Always inject emergency fund tip if savings rate is low
+      if (sr < 10 && !picks.includes(OPT.liquidFund)) picks[4] = OPT.liquidFund;
+
+      return picks.slice(0, 5);
+    }
+
+    /* ── Toast ── */
+    function showToast(msg, type = 'info') {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.className = `toast show ${type}`;
+      setTimeout(() => { t.className = 'toast'; }, 3500);
+    }
+
+    /* ── Logout ── */
+    function handleLogout() {
+      localStorage.removeItem('fv_user');
+      window.location.href = 'index.html';
+    }
+
+  </script>
+</body>
+</html>
